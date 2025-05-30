@@ -1,4 +1,4 @@
-resource "aws_dynamodb_table" "watch_drop_subscriptions" {
+resource "aws_dynamodb_table" "subscriptions_table" {
   name         = local.dynamodb_table_name
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "user_email"
@@ -16,7 +16,7 @@ resource "aws_dynamodb_table" "watch_drop_subscriptions" {
 
   tags = {
     Project     = var.project_title
-    Environment = "Production"
+    Environment = var.environment
     ManagedBy   = var.owner
   }
 }

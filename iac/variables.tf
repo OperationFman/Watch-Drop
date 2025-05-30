@@ -7,6 +7,11 @@ variable "project_title" {
   default = "WatchDrop"
 }
 
+variable "project_title_lowercase" {
+  type    = string
+  default = "watch-drop"
+}
+
 variable "owner" {
   type    = string
   default = "Franklin Moon"
@@ -20,4 +25,9 @@ variable "aws_account_number" {
 variable "aws_account_region" {
   type    = string
   default = "ap-southeast-2"
+}
+
+variable "environment" {
+  type    = string
+  default = "Production"
 }
