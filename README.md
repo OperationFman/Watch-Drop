@@ -93,6 +93,14 @@ These features are planned
 
 ---
 
+## Scaling Concerns
+
+- API rate limit - Currently a maximum of 50 requests per second
+- DynamoDB scan - Currently a maximum of 7000 records before pagination is
+  available
+
+---
+
 ## 🚀 Getting Started (Developer Info)
 
 To get Watch Drop up and running locally and deploy to your AWS account:
