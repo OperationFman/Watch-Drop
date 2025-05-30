@@ -42,7 +42,8 @@ resource "aws_iam_policy" "lambda_policy" {
           "dynamodb:GetItem",
           "dynamodb:Query",
           "dynamodb:PutItem",
-          "dynamodb:DeleteItem"
+          "dynamodb:DeleteItem",
+          "dynamodb:Scan"
         ],
         Effect   = "Allow",
         Resource = aws_dynamodb_table.subscriptions_table.arn
