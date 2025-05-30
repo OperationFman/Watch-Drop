@@ -27,6 +27,12 @@ variable "aws_account_region" {
   default = "ap-southeast-2"
 }
 
+variable "tmdb_api_key_value" {
+  description = "The actual value of your TMDB API Key, ensure you set this up locally and in Secrets Manager."
+  type        = string
+  sensitive   = true
+}
+
 variable "environment" {
   type    = string
   default = "Production"

@@ -46,7 +46,7 @@ cost-efficiency and automatic scaling.
   - **Lambda #1 (Email Processor):** Triggered by incoming emails, parses
     commands from the subject line (`add <url>`, `remove <url>`), and updates
     DynamoDB.
-  - **Lambda #2 (TMDB Checker):** Triggered daily by EventBridge, iterates
+  - **Lambda #2 (TMDB Scanner):** Triggered daily by EventBridge, iterates
     through subscribed titles in DynamoDB, queries the TMDB API for the latest
     status, and identifies new content.
   - **Lambda #3 (SES Sender):** Invoked by Lambda #2 (or directly by other
@@ -99,3 +99,4 @@ To get Watch Drop up and running locally and deploy to your AWS account:
 
 1. Setup Statelock in S3 and DynamoDB - Clickops
 2. Update all values in /iac/variables and /iac/provider.tf
+3. Get API key from TMDB and add to terraform.tfvars

@@ -61,6 +61,13 @@ resource "aws_iam_policy" "lambda_policy" {
         ],
         Effect   = "Allow",
         Resource = "arn:aws:lambda:${var.aws_account_region}:${var.aws_account_number}:function:${var.project_title_lowercase}-ses-sender-lambda-*"
+      },
+      {
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ],
+        Effect   = "Allow",
+        Resource = aws_secretsmanager_secret.tmdb_api_key_secret.arn
       }
     ]
   })
