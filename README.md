@@ -72,6 +72,8 @@ These features are planned
   new email for Lambda #1.
 - **Confirmation Emails:** Send confirmation emails (via Lambda #3) after
   successful subscription additions or removals from Lambda #1.
+- **Email Domain**
+  - Custom email like foo@watchdrop.com instead of a gmail one
 - **Email Design:**
   - Integrate the "Watch Drop" logo into notification emails.
   - Include relevant show banner/cover art.
@@ -105,6 +107,13 @@ These features are planned
 
 To get Watch Drop up and running locally and deploy to your AWS account:
 
-1. Setup Statelock in S3 and DynamoDB - Clickops
-2. Update all values in /iac/variables and /iac/provider.tf
-3. Get API key from TMDB and add to terraform.tfvars
+- Create an email for sending
+- Setup Terraform, AWS CLI and Python3
+- Apply for non-Sandbox SES mode
+  - Can 'get by' by adding verified domains manually, but to solve:
+  - Setup your own domain in Route 53
+  - Uncomment ses_domain/variable blocks and update name, run terraform apply and note the token
+  - Add the token to the domain TXT file
+- Setup Statelock in S3 and DynamoDB - Clickops
+- Update all values in /iac/variables and /iac/provider.tf
+- Get API key from TMDB and add to terraform.tfvars

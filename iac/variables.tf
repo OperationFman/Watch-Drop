@@ -12,6 +12,16 @@ variable "project_title_lowercase" {
   default = "watch-drop"
 }
 
+variable "ses_email" {
+  type    = string
+  default = "le.watch.drop@gmail.com"
+}
+
+# variable "ses_domain" {
+#     type    = string
+#   default = "watchdrop.com"
+# }
+
 variable "owner" {
   type    = string
   default = "Franklin Moon"
