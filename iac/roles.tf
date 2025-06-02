@@ -61,7 +61,7 @@ resource "aws_iam_policy" "lambda_policy" {
           "lambda:InvokeFunction"
         ],
         Effect   = "Allow",
-        Resource = "arn:aws:lambda:${var.aws_account_region}:${var.aws_account_number}:function:${var.project_title_lowercase}-ses-sender-lambda-*"
+        Resource = aws_lambda_function.ses_sender_lambda.arn
       },
       {
         Action = [

@@ -4,18 +4,20 @@ import json
 from botocore.exceptions import ClientError # type: ignore
 import requests # type: ignore
 from datetime import datetime, timedelta
-import re
-
 secretsmanager_client = boto3.client('secretsmanager')
 dynamodb_client = boto3.client('dynamodb')
+lambda_client = boto3.client('lambda')
 
 TMDB_API_SECRET_NAME = os.environ.get('TMDB_API_SECRET_NAME')
 DYNAMODB_TABLE_NAME = os.environ.get('DYNAMODB_TABLE_NAME')
+SES_SENDER_LAMBDA_NAME = os.environ.get('SES_SENDER_LAMBDA_NAME')
 
 if not TMDB_API_SECRET_NAME:
     raise ValueError("TMDB_API_SECRET_NAME environment variable not set.")
 if not DYNAMODB_TABLE_NAME:
     raise ValueError("DYNAMODB_TABLE_NAME environment variable not set.")
+if not SES_SENDER_LAMBDA_NAME:
+    raise ValueError("SES_SENDER_LAMBDA_NAME environment variable not set.")
 
 TMDB_BASE_URL = "https://api.themoviedb.org/3"
 
@@ -29,6 +31,26 @@ def get_secret(secret_name):
         return get_secret_value_response['SecretString']
 
 TMDB_API_KEY = get_secret(TMDB_API_SECRET_NAME)
+
+def invoke_ses_sender_lambda(recipient_email, subject, body_html, body_text):
+    payload = {
+        "recipient_email": recipient_email,
+        "subject": subject,
+        "body_html": body_html,
+        "body_text": body_text
+    }
+    
+    try:
+        response = lambda_client.invoke(
+            FunctionName=SES_SENDER_LAMBDA_NAME,
+            InvocationType='Event',
+            Payload=json.dumps(payload)
+        )
+        print(f"Successfully invoked SES Sender Lambda for {recipient_email}. Status code: {response['StatusCode']}")
+    except ClientError as e:
+        print(f"Error invoking SES Sender Lambda for {recipient_email}: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred during SES Sender Lambda invocation: {e}")
 
 def lambda_handler(event, context):
     print(f"Using TMDB API Key (first 5 chars): {TMDB_API_KEY[:5]}*****")
@@ -93,22 +115,59 @@ def lambda_handler(event, context):
             episode_aired_yesterday = False
             tmdb_air_date = None
 
-            if tmdb_type == 'tv':
+            if tmdb_type == 'tv episode':
                 last_episode = tmdb_data.get('last_episode_to_air')
                 if last_episode and last_episode.get('air_date'):
                     tmdb_air_date = last_episode['air_date']
+                    episode_name = last_episode.get('name', 'N/A')
+                    episode_number = last_episode.get('episode_number', 'N/A')
+                    season_number = last_episode.get('season_number', 'N/A')
+                    content_title = f"{tmdb_data.get('name', 'Unknown TV Show')} S{season_number}E{episode_number}: {episode_name}"
             elif tmdb_type == 'movie':
                 tmdb_air_date = tmdb_data.get('release_date')
+                content_title = tmdb_data.get('title', 'Unknown Movie')
+            else:
+                content_title = "Unknown Content"
 
             if tmdb_air_date:
                 episode_aired_yesterday = (tmdb_air_date == yesterday_date_str)
                 print(f"  {user_email}: TMDB ID {tmdb_id} (Type: {tmdb_type}, Latest Air Date: {tmdb_air_date}) -> Aired Yesterday: {episode_aired_yesterday}")
             else:
                 print(f"  {user_email}: TMDB ID {tmdb_id} (Type: {tmdb_type}) -> No valid air date found from TMDB API response.")
-
+                
             if episode_aired_yesterday:
-                # Placeholder Sender
-                print(f"    ACTION: Detected new content for {user_email}, TMDB ID {tmdb_id}. (Aired Yesterday)")
+                subject = f"Watch Drop: New Content Aired Yesterday! - {content_title}"
+                tmdb_link = f"https://www.themoviedb.org/{tmdb_type}/{tmdb_id}"
+                
+                body_text = f"""
+                    Hello there
+
+                    A new {tmdb_type} you're tracking aired yesterday:
+
+                    Title: {content_title}
+                    Aired Date: {tmdb_air_date}
+                    View on TMDB: {tmdb_link}
+
+                    Enjoy your Watch Drop!
+                    """
+                body_html = f"""
+                <html>
+                <body>
+                    <h1>Hello there</h1>
+                    <p>A new {tmdb_type} you're tracking just aired yesterday:</p>
+                    <h2>✨ {content_title} ✨</h2>
+                    <ul>
+                        <li><strong>Aired Date:</strong> {tmdb_air_date}</li>
+                        <li><strong>TMDB Page:</strong> <a href="{tmdb_link}">{tmdb_link}</a></li>
+                    </ul>
+                    <p>Enjoy your Watch Drop!</p>
+                    <p>The Watch Drop Team</p>
+                </body>
+                </html>
+                """
+                
+                invoke_ses_sender_lambda(user_email, subject, body_html, body_text)
+                print(f"    ACTION: Invoked SES Sender for {user_email}, TMDB ID {tmdb_id}. (Aired Yesterday)")
 
         except requests.exceptions.RequestException as e:
             print(f"Error calling TMDB API for {tmdb_type} ID {tmdb_id}: {e}")

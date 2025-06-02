@@ -1,0 +1,6 @@
+{
+	"recipient_email": "franklin.m.moon@gmail.com",
+	"subject": "Watch Drop: Test Notification!",
+	"body_html": "<html><body><h1>This is a test notification from Watch Drop!</h1><p>A new episode of your favorite show *might* have aired.</p><p>This is a <strong>HTML test email</strong>.</p></body></html>",
+	"body_text": "This is a test notification from Watch Drop!\nA new episode of your favorite show *might* have aired.\n\nThis is a TEXT test email."
+}
