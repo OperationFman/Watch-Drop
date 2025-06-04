@@ -38,9 +38,15 @@ variable "aws_account_region" {
 }
 
 variable "tmdb_api_key_value" {
-  description = "The actual value of your TMDB API Key, ensure you set this up locally and in Secrets Manager."
+  description = "The actual value of your TMDB API Key, ensure you set this up locally in tfvar."
   type        = string
   sensitive   = true
+}
+
+variable "schedule_cron" {
+  description = "The cron expression for the when you want the scan to run"
+  type        = string
+  default     = "cron(0 8 * * ? *)" 
 }
 
 variable "environment" {
