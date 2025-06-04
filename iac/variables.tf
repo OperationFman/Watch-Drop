@@ -12,15 +12,15 @@ variable "project_title_lowercase" {
   default = "watch-drop"
 }
 
-variable "ses_email" {
+variable "ses_domain" {
   type    = string
-  default = "le.watch.drop@gmail.com"
+  default = "franklin.v.moon.dev"
 }
 
-# variable "ses_domain" {
-#     type    = string
-#   default = "watchdrop.com"
-# }
+variable "ses_receiving_email_address" {
+  type    = string
+  default = "subscribe@franklin.v.moon.dev"
+}
 
 variable "owner" {
   type    = string
@@ -46,7 +46,7 @@ variable "tmdb_api_key_value" {
 variable "schedule_cron" {
   description = "The cron expression for the when you want the scan to run"
   type        = string
-  default     = "cron(0 8 * * ? *)" 
+  default     = "cron(0 8 * * ? *)"
 }
 
 variable "environment" {
