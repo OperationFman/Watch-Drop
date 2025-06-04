@@ -107,13 +107,11 @@ These features are planned
 
 To get Watch Drop up and running locally and deploy to your AWS account:
 
-- Create an email for sending
+
 - Setup Terraform, AWS CLI and Python3
-- Apply for non-Sandbox SES mode
-  - Can 'get by' by adding verified domains manually, but to solve:
-  - Setup your own domain in Route 53
-  - Uncomment ses_domain/variable blocks and update name, run terraform apply and note the token
-  - Add the token to the domain TXT file
+- Buy a domain
 - Setup Statelock in S3 and DynamoDB - Clickops
 - Update all values in /iac/variables and /iac/provider.tf
 - Get API key from TMDB and add to terraform.tfvars
+- Run iac and take outputs to setup TXT for domain
+  - 
