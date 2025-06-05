@@ -8,14 +8,16 @@ resource "aws_ses_domain_identity" "domain_identity" {
 }
 
 resource "aws_ses_domain_dkim" "domain_dkim" {
-  domain = aws_ses_domain_identity.domain_identity.domain
-
+  domain     = aws_ses_domain_identity.domain_identity.domain
   depends_on = [aws_ses_domain_identity.domain_identity]
 }
 
 resource "aws_ses_receipt_rule_set" "email_receiver_rule_set" {
   rule_set_name = "${var.project_title_lowercase}-email-receiver-ruleset"
+}
 
+resource "aws_ses_active_receipt_rule_set" "active_email_receiver_rule_set" {
+  rule_set_name = aws_ses_receipt_rule_set.email_receiver_rule_set.rule_set_name
 }
 
 resource "aws_ses_receipt_rule" "email_processor_rule" {
@@ -23,13 +25,17 @@ resource "aws_ses_receipt_rule" "email_processor_rule" {
   rule_set_name = aws_ses_receipt_rule_set.email_receiver_rule_set.rule_set_name
   recipients    = [var.ses_receiving_email_address]
 
+  enabled = true
+
   lambda_action {
     function_arn = aws_lambda_function.email_processor_lambda.arn
     position     = 1
   }
 
-  depends_on = [aws_lambda_permission.allow_ses_to_invoke_email_processor]
-
+  depends_on = [
+    aws_lambda_permission.allow_ses_to_invoke_email_processor,
+    aws_ses_active_receipt_rule_set.active_email_receiver_rule_set
+  ]
 }
 
 resource "aws_lambda_permission" "allow_ses_to_invoke_email_processor" {
@@ -50,12 +56,13 @@ resource "aws_route53_record" "ses_domain_verification_record" {
 }
 
 resource "aws_route53_record" "ses_dkim_records" {
-  count      = length(aws_ses_domain_dkim.domain_dkim.dkim_tokens)
+  count = 3
+
   zone_id    = data.aws_route53_zone.selected_domain.zone_id
-  name       = "${element(aws_ses_domain_dkim.domain_dkim.dkim_tokens, count.index)}._domainkey.${var.ses_domain}"
+  name       = "${aws_ses_domain_dkim.domain_dkim.dkim_tokens[count.index]}._domainkey.${var.ses_domain}"
   type       = "CNAME"
   ttl        = 60
-  records    = ["${element(aws_ses_domain_dkim.domain_dkim.dkim_tokens, count.index)}.dkim.amazonses.com"]
+  records    = ["${aws_ses_domain_dkim.domain_dkim.dkim_tokens[count.index]}.dkim.amazonses.com"]
   depends_on = [aws_ses_domain_dkim.domain_dkim]
 }
 

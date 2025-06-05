@@ -87,7 +87,7 @@ resource "aws_lambda_function" "ses_sender_lambda" {
 
   environment {
     variables = {
-      SES_SENDER_EMAIL = aws_ses_domain_identity.domain_identity.domain
+      SES_SENDER_EMAIL = "noreply@${aws_ses_domain_identity.domain_identity.domain}"
     }
   }
 

@@ -13,6 +13,19 @@ if not DYNAMODB_TABLE_NAME:
 
 TMDB_URL_REGEX = re.compile(r'themoviedb\.org/(movie|tv)/([a-zA-Z0-9\-]+)')
 
+EMAIL_PARSE_REGEX = re.compile(r'<([^>]+)>|([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})')
+
+def extract_email_address(full_from_string):
+    """
+    Extracts just the email address from a string that might be
+    "Friendly Name <email@domain.com>" or just "email@domain.com".
+    """
+    match = EMAIL_PARSE_REGEX.search(full_from_string)
+    if match:
+        return match.group(1) or match.group(2)
+    return full_from_string
+
+
 def lambda_handler(event, context):
     print(f"Email Processor Lambda triggered by event: {json.dumps(event)}")
 
@@ -22,7 +35,8 @@ def lambda_handler(event, context):
             continue
 
         mail_data = record['ses']['mail']
-        sender_email = mail_data['commonHeaders']['from'][0]
+        full_sender_string = mail_data['commonHeaders']['from'][0]
+        sender_email = extract_email_address(full_sender_string)
         subject = mail_data['commonHeaders']['subject']
 
         print(f"Processing email from '{sender_email}' with subject: '{subject}'")
@@ -61,8 +75,8 @@ def lambda_handler(event, context):
                     TableName=DYNAMODB_TABLE_NAME,
                     Item={
                         'user_email': {'S': sender_email},
-                        'tmdb_id': {'S': tmdb_full_id},
-                        'tmdb_type': {'S': tmdb_content_type}
+                        'tmdb_id': {'S': tmdb_full_id}
+                        
                     }
                 )
                 print(f"  Successfully added/updated subscription for '{sender_email}' to TMDB ID '{tmdb_full_id}'.")

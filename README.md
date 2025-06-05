@@ -110,9 +110,8 @@ To get Watch Drop up and running locally and deploy to your AWS account:
 
 
 - Setup Terraform, AWS CLI and Python3
-- Buy a domain
+- Buy a domain in Route53
 - Setup Statelock in S3 and DynamoDB - Clickops
 - Update all values in /iac/variables and /iac/provider.tf
 - Get API key from TMDB and add to terraform.tfvars
 - Run iac and take outputs to setup TXT for domain
-  - 
