@@ -4,6 +4,7 @@ import json
 from botocore.exceptions import ClientError # type: ignore
 import requests # type: ignore
 from datetime import datetime, timedelta
+
 secretsmanager_client = boto3.client('secretsmanager')
 dynamodb_client = boto3.client('dynamodb')
 lambda_client = boto3.client('lambda')
@@ -87,20 +88,27 @@ def lambda_handler(event, context):
 
     for item in subscriptions:
         user_email = item['user_email']['S']
-        tmdb_id = item['tmdb_id']['S']
+        tmdb_full_slug = item['tmdb_id']['S']
+        tmdb_type = item.get('tmdb_type', {}).get('S', 'tv')
 
-        tmdb_type = item.get('tmdb_type', {}).get('S', 'tv') 
+        try:
+            tmdb_numeric_id = tmdb_full_slug.split('-')[0]
+            if not tmdb_numeric_id.isdigit():
+                raise ValueError(f"Extracted numeric ID '{tmdb_numeric_id}' is not valid.")
+        except Exception as e:
+            print(f"Skipping subscription for user {user_email} due to malformed TMDB ID slug '{tmdb_full_slug}': {e}")
+            continue
 
         api_url = ""
         if tmdb_type == 'tv':
-            api_url = f"{TMDB_BASE_URL}/tv/{tmdb_id}?language=en-US"
+            api_url = f"{TMDB_BASE_URL}/tv/{tmdb_numeric_id}?language=en-US"
         elif tmdb_type == 'movie':
-            api_url = f"{TMDB_BASE_URL}/movie/{tmdb_id}?language=en-US"
+            api_url = f"{TMDB_BASE_URL}/movie/{tmdb_numeric_id}?language=en-US"
         else:
-            print(f"Skipping unknown TMDB type '{tmdb_type}' for user {user_email} and ID {tmdb_id}. Ensure tmdb_type is 'tv' or 'movie'.")
+            print(f"Skipping unknown TMDB type '{tmdb_type}' for user {user_email} and ID {tmdb_full_slug}. Ensure tmdb_type is 'tv' or 'movie'.")
             continue
 
-        print(f"Checking {tmdb_type} ID {tmdb_id} for user {user_email} at {api_url}")
+        print(f"Checking {tmdb_type} ID {tmdb_numeric_id} (slug: {tmdb_full_slug}) for user {user_email} at {api_url}")
 
         headers = {
             "Authorization": f"Bearer {TMDB_API_KEY}",
@@ -112,40 +120,71 @@ def lambda_handler(event, context):
             response.raise_for_status()
             tmdb_data = response.json()
 
-            episode_aired_yesterday = False
-            tmdb_air_date = None
+            aired_recently = False
+            air_date_to_check = None
+            content_title = "Unknown Content"
 
-            if tmdb_type == 'tv episode':
+            if tmdb_type == 'tv':
                 last_episode = tmdb_data.get('last_episode_to_air')
-                if last_episode and last_episode.get('air_date'):
-                    tmdb_air_date = last_episode['air_date']
-                    episode_name = last_episode.get('name', 'N/A')
-                    episode_number = last_episode.get('episode_number', 'N/A')
-                    season_number = last_episode.get('season_number', 'N/A')
-                    content_title = f"{tmdb_data.get('name', 'Unknown TV Show')} S{season_number}E{episode_number}: {episode_name}"
-            elif tmdb_type == 'movie':
-                tmdb_air_date = tmdb_data.get('release_date')
-                content_title = tmdb_data.get('title', 'Unknown Movie')
-            else:
-                content_title = "Unknown Content"
+                next_episode = tmdb_data.get('next_episode_to_air')
 
-            if tmdb_air_date:
-                episode_aired_yesterday = (tmdb_air_date == yesterday_date_str)
-                print(f"  {user_email}: TMDB ID {tmdb_id} (Type: {tmdb_type}, Latest Air Date: {tmdb_air_date}) -> Aired Yesterday: {episode_aired_yesterday}")
-            else:
-                print(f"  {user_email}: TMDB ID {tmdb_id} (Type: {tmdb_type}) -> No valid air date found from TMDB API response.")
+                if next_episode and next_episode.get('air_date'):
+                    next_air_date_str = next_episode['air_date']
+                    next_air_datetime = datetime.strptime(next_air_date_str, '%Y-%m-%d').date()
+                    
+                    if next_air_datetime == today_utc:
+                        air_date_to_check = next_air_date_str
+                        content_title = f"{tmdb_data.get('name', 'Unknown TV Show')} S{next_episode.get('season_number', 'N/A')}E{next_episode.get('episode_number', 'N/A')}: {next_episode.get('name', 'N/A')}"
+                        aired_recently = True
+                        print(f"  {user_email}: TMDB ID {tmdb_full_slug} (Type: {tmdb_type}, Next Air Date: {next_air_date_str}) -> Airs Today.")
+                    else:
+                        print(f"  {user_email}: TMDB ID {tmdb_full_slug} (Type: {tmdb_type}, Next Air Date: {next_air_date_str}) -> Upcoming Episode.")
+
+                if not aired_recently and last_episode and last_episode.get('air_date'):
+                    last_air_date_str = last_episode['air_date']
+                    last_air_datetime = datetime.strptime(last_air_date_str, '%Y-%m-%d').date()
+                    
+                    if last_air_datetime == yesterday_utc:
+                        aired_recently = True
+                        air_date_to_check = last_air_date_str
+                        content_title = f"{tmdb_data.get('name', 'Unknown TV Show')} S{last_episode.get('season_number', 'N/A')}E{last_episode.get('episode_number', 'N/A')}: {last_episode.get('name', 'N/A')}"
+                        print(f"  {user_email}: TMDB ID {tmdb_full_slug} (Type: {tmdb_type}, Last Air Date: {last_air_date_str}) -> Aired Yesterday.")
+                    else:
+                        print(f"  {user_email}: TMDB ID {tmdb_full_slug} (Type: {tmdb_type}, Last Air Date: {last_air_date_str}) -> Not Aired Yesterday.")
                 
-            if episode_aired_yesterday:
-                subject = f"Watch Drop: New Content Aired Yesterday! - {content_title}"
-                tmdb_link = f"https://www.themoviedb.org/{tmdb_type}/{tmdb_id}"
+                if not air_date_to_check and not aired_recently:
+                    print(f"  {user_email}: TMDB ID {tmdb_full_slug} (Type: {tmdb_type}) -> No recent or upcoming air date found in TMDB data.")
+
+            elif tmdb_type == 'movie':
+                release_date_str = tmdb_data.get('release_date')
+                content_title = tmdb_data.get('title', 'Unknown Movie')
+
+                if release_date_str:
+                    release_datetime = datetime.strptime(release_date_str, '%Y-%m-%d').date()
+                    if release_datetime == yesterday_utc:
+                        aired_recently = True
+                        air_date_to_check = release_date_str
+                        print(f"  {user_email}: TMDB ID {tmdb_full_slug} (Type: {tmdb_type}, Release Date: {release_date_str}) -> Released Yesterday.")
+                    elif release_datetime == today_utc:
+                        aired_recently = True
+                        air_date_to_check = release_date_str
+                        print(f"  {user_email}: TMDB ID {tmdb_full_slug} (Type: {tmdb_type}, Release Date: {release_date_str}) -> Released Today.")
+                    else:
+                        print(f"  {user_email}: TMDB ID {tmdb_full_slug} (Type: {tmdb_type}, Release Date: {release_date_str}) -> Not Released Yesterday or Today.")
+                else:
+                    print(f"  {user_email}: TMDB ID {tmdb_full_slug} (Type: {tmdb_type}) -> No valid movie release date found from TMDB API response.")
+
+            if aired_recently:
+                subject = f"Watch Drop: New Content Aired! - {content_title}"
+                tmdb_link = f"https://www.themoviedb.org/{tmdb_type}/{tmdb_full_slug}" 
                 
                 body_text = f"""
                     Hello there
 
-                    A new {tmdb_type} you're tracking aired yesterday:
+                    A new {tmdb_type} you're tracking aired recently:
 
                     Title: {content_title}
-                    Aired Date: {tmdb_air_date}
+                    Aired Date: {air_date_to_check}
                     View on TMDB: {tmdb_link}
 
                     Enjoy your Watch Drop!
@@ -154,10 +193,10 @@ def lambda_handler(event, context):
                 <html>
                 <body>
                     <h1>Hello there</h1>
-                    <p>A new {tmdb_type} you're tracking just aired yesterday:</p>
+                    <p>A new {tmdb_type} you're tracking just aired recently:</p>
                     <h2>✨ {content_title} ✨</h2>
                     <ul>
-                        <li><strong>Aired Date:</strong> {tmdb_air_date}</li>
+                        <li><strong>Aired Date:</strong> {air_date_to_check}</li>
                         <li><strong>TMDB Page:</strong> <a href="{tmdb_link}">{tmdb_link}</a></li>
                     </ul>
                     <p>Enjoy your Watch Drop!</p>
@@ -167,14 +206,14 @@ def lambda_handler(event, context):
                 """
                 
                 invoke_ses_sender_lambda(user_email, subject, body_html, body_text)
-                print(f"    ACTION: Invoked SES Sender for {user_email}, TMDB ID {tmdb_id}. (Aired Yesterday)")
+                print(f"    ACTION: Invoked SES Sender for {user_email}, TMDB ID {tmdb_full_slug}. (Aired Recently)")
 
         except requests.exceptions.RequestException as e:
-            print(f"Error calling TMDB API for {tmdb_type} ID {tmdb_id}: {e}")
+            print(f"Error calling TMDB API for {tmdb_type} ID {tmdb_numeric_id} (slug: {tmdb_full_slug}): {e}")
         except json.JSONDecodeError:
-            print(f"Error decoding JSON response from TMDB for {tmdb_type} ID {tmdb_id}.")
+            print(f"Error decoding JSON response from TMDB for {tmdb_type} ID {tmdb_numeric_id} (slug: {tmdb_full_slug}).")
         except Exception as e:
-            print(f"An unexpected error occurred processing {tmdb_type} ID {tmdb_id}: {e}")
+            print(f"An unexpected error occurred processing {tmdb_type} ID {tmdb_numeric_id} (slug: {tmdb_full_slug}): {e}")
 
     return {
         'statusCode': 200,

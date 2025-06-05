@@ -75,8 +75,8 @@ def lambda_handler(event, context):
                     TableName=DYNAMODB_TABLE_NAME,
                     Item={
                         'user_email': {'S': sender_email},
-                        'tmdb_id': {'S': tmdb_full_id}
-                        
+                        'tmdb_id': {'S': tmdb_full_id},
+                        'tmdb_type': {'S': tmdb_content_type}
                     }
                 )
                 print(f"  Successfully added/updated subscription for '{sender_email}' to TMDB ID '{tmdb_full_id}'.")

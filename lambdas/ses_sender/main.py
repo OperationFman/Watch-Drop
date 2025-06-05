@@ -10,6 +10,7 @@ SES_SENDER_EMAIL = os.environ.get('SES_SENDER_EMAIL')
 if not SES_SENDER_EMAIL:
     raise ValueError("SES_SENDER_EMAIL environment variable not set for SES Sender Lambda.")
 
+
 def send_notification_email(recipient_email, subject, body_html, body_text):
     try:
         response = ses_client.send_email(
