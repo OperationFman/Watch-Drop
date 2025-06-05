@@ -1,3 +1,8 @@
+data "aws_route53_zone" "selected_domain" {
+  name         = var.ses_domain
+  private_zone = false
+}
+
 resource "aws_ses_domain_identity" "domain_identity" {
   domain = var.ses_domain
 }
@@ -35,25 +40,30 @@ resource "aws_lambda_permission" "allow_ses_to_invoke_email_processor" {
   source_arn    = "arn:aws:ses:${var.aws_account_region}:${var.aws_account_number}:*"
 }
 
-output "ses_domain_verification_txt_record_name" {
-  description = "DNS name for TXT record"
-  value       = "_amazonses.${var.ses_domain}"
-}
-output "ses_domain_verification_txt_record_value" {
-  description = "DNS record value for TXT record"
-  value       = aws_ses_domain_identity.domain_identity.verification_token
-}
-
-output "ses_dkim_cname_records" {
-  description = "List of CNAMEs for SES DKIM authentication"
-  value       = aws_ses_domain_dkim.domain_dkim.dkim_tokens
+resource "aws_route53_record" "ses_domain_verification_record" {
+  zone_id    = data.aws_route53_zone.selected_domain.zone_id
+  name       = aws_ses_domain_identity.domain_identity.id
+  type       = "TXT"
+  ttl        = 60
+  records    = [aws_ses_domain_identity.domain_identity.verification_token]
+  depends_on = [aws_ses_domain_identity.domain_identity]
 }
 
-output "ses_receiving_mx_record_name" {
-  description = "DNS for MX record"
-  value       = var.ses_domain
+resource "aws_route53_record" "ses_dkim_records" {
+  count      = length(aws_ses_domain_dkim.domain_dkim.dkim_tokens)
+  zone_id    = data.aws_route53_zone.selected_domain.zone_id
+  name       = "${element(aws_ses_domain_dkim.domain_dkim.dkim_tokens, count.index)}._domainkey.${var.ses_domain}"
+  type       = "CNAME"
+  ttl        = 60
+  records    = ["${element(aws_ses_domain_dkim.domain_dkim.dkim_tokens, count.index)}.dkim.amazonses.com"]
+  depends_on = [aws_ses_domain_dkim.domain_dkim]
 }
-output "ses_receiving_mx_record_value" {
-  description = "DNS record value for MX record"
-  value       = "10 inbound-smtp.${var.aws_account_region}.amazonaws.com"
+
+resource "aws_route53_record" "ses_receiving_mx_record" {
+  zone_id    = data.aws_route53_zone.selected_domain.zone_id
+  name       = var.ses_domain
+  type       = "MX"
+  ttl        = 60
+  records    = ["10 inbound-smtp.${var.aws_account_region}.amazonaws.com"]
+  depends_on = [aws_ses_receipt_rule_set.email_receiver_rule_set]
 }

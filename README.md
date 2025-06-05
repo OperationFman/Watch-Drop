@@ -82,6 +82,7 @@ These features are planned
   of all new drops, instead of individual notifications.
 - **Enhanced Rate Limiting / Security:** Implement more sophisticated rate
   limiting strategies and security measures beyond basic IAM.
+- **Setup MAIL FROM**
 - **S3 for Email Content Storage:** Transition from relying solely on email
   subject lines to storing full email content in S3 for more robust parsing of
   commands from the email body and handling attachments.

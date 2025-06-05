@@ -14,12 +14,12 @@ variable "project_title_lowercase" {
 
 variable "ses_domain" {
   type    = string
-  default = "franklin.v.moon.dev"
+  default = "watchdrop.org"
 }
 
 variable "ses_receiving_email_address" {
   type    = string
-  default = "subscribe@franklin.v.moon.dev"
+  default = "subscribe@watchdrop.org"
 }
 
 variable "owner" {
