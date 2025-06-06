@@ -3,53 +3,52 @@ locals {
 }
 
 variable "project_title" {
-  type    = string
-  default = "WatchDrop"
+  type        = string
+  description = "e.g: WatchDrop"
 }
 
 variable "project_title_lowercase" {
-  type    = string
-  default = "watch-drop"
+  type        = string
+  description = "e.g: watch-drop"
 }
 
 variable "ses_domain" {
-  type    = string
-  default = "watchdrop.org"
+  type        = string
+  description = "e.g: watchdrop.org"
 }
 
 variable "ses_receiving_email_address" {
-  type    = string
-  default = "subscribe@watchdrop.org"
+  type        = string
+  description = "e.g: subscribe@watchdrop.org"
 }
 
 variable "owner" {
-  type    = string
-  default = "Franklin Moon"
+  type        = string
+  description = "e.g: Franklin Moon"
 }
 
 variable "aws_account_number" {
-  type    = string
-  default = "355734424613"
+  type        = string
+  description = "AWS account ID number"
 }
 
 variable "aws_account_region" {
-  type    = string
-  default = "ap-southeast-2"
+  type        = string
+  description = "e.g: ap-southeast-2"
 }
 
 variable "tmdb_api_key_value" {
-  description = "The actual value of your TMDB API Key, ensure you set this up locally in tfvar."
+  description = "TMDB API Key from The Movie Database. Ensure you set this up in your terraform.tfvars file"
   type        = string
   sensitive   = true
 }
 
 variable "schedule_cron" {
-  description = "The cron expression for the when you want the scan to run"
+  description = "The cron expression for when you want the TMDB scan to run e.g: cron(0 8 * * ? *) for 8 AM UTC daily"
   type        = string
-  default     = "cron(0 8 * * ? *)"
 }
 
 variable "environment" {
-  type    = string
-  default = "Production"
+  type        = string
+  description = "e.g: Production or Development"
 }

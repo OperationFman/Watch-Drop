@@ -58,7 +58,7 @@ resource "aws_lambda_function" "tmdb_scanner_lambda" {
   environment {
     variables = {
 
-      TMDB_API_SECRET_NAME   = aws_secretsmanager_secret.tmdb_api_key_secret.name # Use the secret's name
+      TMDB_API_SECRET_NAME   = aws_secretsmanager_secret.tmdb_api_key_secret.name
       DYNAMODB_TABLE_NAME    = local.dynamodb_table_name
       SES_SENDER_LAMBDA_NAME = "${var.project_title_lowercase}-ses-sender-lambda"
     }
