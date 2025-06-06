@@ -1,19 +1,18 @@
-# 💧 Watch Drop: Your Email Driven TV & Movie Notification Service
+# 💧 Watch Drop: Your Email Driven TV Notification Service
 
-Simple Email service to subscribe and keep track of shows/movies when a new
-episode is available to stream.
+Simple Email service to subscribe and keep track of shows when a new episode is
+available to stream.
 
 ---
 
 ## 🚀 Overview
 
 Watch Drop is a serverless, personalized notification service that keeps you
-updated on your favorite TV shows and movies. No more missing new episodes or
-releases
+updated on your favorite TV shows. No more missing new episodes or releases
 
 Once subscribed to a title, Watch Drop automatically creates you an account and
 checks for new content daily, then sends you an email alert when a new episode
-or movie becomes available to stream.
+becomes available to stream.
 
 This project is built leveraging the power of AWS serverless services for
 efficiency and scalability, integrating with The Movie Database (TMDB) for
@@ -173,10 +172,8 @@ Create a new bucket with name
 
 Keep all settings as default, create
 
-#### Create DynamoDB State-lock
-
-In the AWS Console, open DynamoDB and make sure you're in the region you want to
-use going forward (Top right corner) e.g `ap-southeast-2`
+Next, open DynamoDB and make sure you're in the region you want to use going
+forward (Top right corner) e.g `ap-southeast-2`
 
 Click Create Table:
 
