@@ -23,7 +23,7 @@ comprehensive content information.
 
 ## 🧠 How It Works
 
-1. Research what show(s) you want to get alerts for
+1. Research what show you want to get alerts for in
    [TMDB](https://developer.themoviedb.org/reference/tv-series-episode-groups)
 
 2. Copy the url
@@ -43,8 +43,8 @@ comprehensive content information.
 
 ![Diagram](https://github.com/user-attachments/assets/0b5e7399-5cfe-4f53-8819-27a7ac141d08)
 
-- **Route 53** to provide Domain name, TXT, MX and 3 CNAME record
-- **SES Simple Email Service** to Receive and Send emails to AWS
+- **Route 53** to provide Domain name, TXT, MX and 3 CNAME records
+- **SES Simple Email Service** to receive and send emails to AWS
 - **Lambda** 3 Serverless functions, email_processor, tmdb_scanner, ses-sender
 - **IAM** For Lambda and SES role utilization, least privilege
 - **Secrets Manager** to store credentials for TMDB API
@@ -94,7 +94,7 @@ Optional - If you want to run code locally:
 Open your terminal and clone this repository
 
 ```
-gh repo clone OperationFman/Watch-Drop
+git clone https://github.com/OperationFman/Watch-Drop.git
 ```
 
 Rename if desired and navigate to the `/iac` directory e.g:
@@ -102,7 +102,7 @@ Rename if desired and navigate to the `/iac` directory e.g:
 Create a new file called `terraform.tfvars`
 
 Open the file then paste this starter configuration, in following steps we will
-_replace_ this with your own data. Save the file
+_replace_ each value with your own data. Save the file
 
 ```
 project_title                  = "WatchDrop"
@@ -129,7 +129,8 @@ Inside `terraform.tfvars` update these values:
 - aws_account_number (Found in the top right of the AWS console)
 - aws_account_region (Wherever you choose, be consistent from now on)
 
-Optional: You can leave the Production and Cron as-is if you are happy with them
+Optional: You can leave the `environment` and `schedule_cron` as-is if you are
+happy with them
 
 #### Get TMDB API Key
 
