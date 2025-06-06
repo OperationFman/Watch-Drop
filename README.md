@@ -37,6 +37,8 @@ comprehensive content information.
 5. To unsubscribe from a show, simply send an email with `remove` instead of
    `add`
 
+6. To unsubscribe from everything, send an email with `nuke account`
+
 ---
 
 ## Tech Stack

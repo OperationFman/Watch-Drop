@@ -1,105 +1,56 @@
 import os
-import boto3   # type: ignore
+import boto3 #type: ignore
 import json
 import re
-from botocore.exceptions import ClientError # type: ignore
+from botocore.exceptions import ClientError #type: ignore
 
 dynamodb_client = boto3.client('dynamodb')
 
-DYNAMODB_TABLE_NAME = os.environ.get('DYNAMODB_TABLE_NAME')
-
-if not DYNAMODB_TABLE_NAME:
-    raise ValueError("DYNAMODB_TABLE_NAME environment variable not set for Email Processor Lambda.")
-
+EMAIL_PARSE_REGEX = re.compile(r'<([^>]+)>|([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})')
 TMDB_URL_REGEX = re.compile(r'themoviedb\.org/(movie|tv)/([a-zA-Z0-9\-]+)')
 
-EMAIL_PARSE_REGEX = re.compile(r'<([^>]+)>|([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})')
-
 def extract_email_address(full_from_string):
-    """
-    Extracts just the email address from a string that might be
-    "Friendly Name <email@domain.com>" or just "email@domain.com".
-    """
     match = EMAIL_PARSE_REGEX.search(full_from_string)
-    if match:
-        return match.group(1) or match.group(2)
+    if match: return match.group(1) or match.group(2)
     return full_from_string
 
-
 def lambda_handler(event, context):
-    print(f"Email Processor Lambda triggered by event: {json.dumps(event)}")
+    table_name = os.environ.get('DYNAMODB_TABLE_NAME')
+    if not table_name: raise ValueError("DYNAMODB_TABLE_NAME not set.")
 
     for record in event['Records']:
-        if 'ses' not in record:
-            print("Record is not an SES email receiving event. Skipping.")
-            continue
+        if 'ses' not in record: continue
 
-        mail_data = record['ses']['mail']
-        full_sender_string = mail_data['commonHeaders']['from'][0]
-        sender_email = extract_email_address(full_sender_string)
-        subject = mail_data['commonHeaders']['subject']
-
-        print(f"Processing email from '{sender_email}' with subject: '{subject}'")
-
-        command_type = None
-        tmdb_full_id = None
-        tmdb_content_type = None
-
-        subject_lower = subject.lower().strip()
-
-        if subject_lower.startswith("add "):
-            command_type = "add"
-        elif subject_lower.startswith("remove "):
-            command_type = "remove"
-        
-        if command_type:
-            url_part = subject_lower[len(command_type) + 1:].strip()
-            
-            match = TMDB_URL_REGEX.search(url_part)
-            if match:
-                tmdb_content_type = match.group(1)
-                tmdb_full_id = match.group(2)
-            else:
-                print(f"  Could not extract valid TMDB URL from subject: '{subject}'. Skipping.")
-                continue
-
-        if not command_type or not tmdb_full_id:
-            print(f"  No valid 'add' or 'remove' command or TMDB ID found in subject: '{subject}'. Skipping.")
-            continue
-
-        print(f"  Detected command: '{command_type}', TMDB ID: '{tmdb_full_id}', Type: '{tmdb_content_type}' for user: '{sender_email}'")
+        sender_email = extract_email_address(record['ses']['mail']['commonHeaders']['from'][0])
+        subject_lower = record['ses']['mail']['commonHeaders']['subject'].lower().strip()
 
         try:
-            if command_type == "add":
-                dynamodb_client.put_item(
-                    TableName=DYNAMODB_TABLE_NAME,
-                    Item={
-                        'user_email': {'S': sender_email},
-                        'tmdb_id': {'S': tmdb_full_id},
-                        'tmdb_type': {'S': tmdb_content_type}
-                    }
-                )
-                print(f"  Successfully added/updated subscription for '{sender_email}' to TMDB ID '{tmdb_full_id}'.")
-                # TODO: confirmation email via ses_sender
+            if subject_lower == "nuke account":
+                response = dynamodb_client.query(TableName=table_name, KeyConditionExpression='user_email = :e', ExpressionAttributeValues={':e': {'S': sender_email}})
+                for item in response.get('Items', []):
+                    dynamodb_client.delete_item(TableName=table_name, Key={'user_email': {'S': sender_email}, 'tmdb_id': {'S': item['tmdb_id']['S']}})
+                continue
 
-            elif command_type == "remove":
-                dynamodb_client.delete_item(
-                    TableName=DYNAMODB_TABLE_NAME,
-                    Key={
-                        'user_email': {'S': sender_email},
-                        'tmdb_id': {'S': tmdb_full_id}
-                    }
-                )
-                print(f"  Successfully removed subscription for '{sender_email}' from TMDB ID '{tmdb_full_id}'.")
-                # TODO: confirmation email via ses_sender
+            command_prefix = None
+            if subject_lower.startswith("add "): command_prefix = "add"
+            elif subject_lower.startswith("remove "): command_prefix = "remove"
+            
+            if not command_prefix: continue
+            
+            url_part = subject_lower[len(command_prefix) + 1:].strip()
+            match = TMDB_URL_REGEX.search(url_part)
+            
+            if not match: continue
+            
+            content_type, tmdb_id = match.groups()
+            if content_type != 'tv': continue
 
+            if command_prefix == "add":
+                dynamodb_client.put_item(TableName=table_name, Item={'user_email': {'S': sender_email.lower()}, 'tmdb_id': {'S': tmdb_id}})
+            else:
+                dynamodb_client.delete_item(TableName=table_name, Key={'user_email': {'S': sender_email.lower()}, 'tmdb_id': {'S': tmdb_id}})
+            
         except ClientError as e:
-            print(f"  DynamoDB operation failed for '{command_type}' command for '{sender_email}': {e}")
-            # TODO: confirmation email via ses_sender
-        except Exception as e:
-            print(f"  An unexpected error occurred during DynamoDB operation for '{sender_email}': {e}")
+            print(f"DynamoDB operation failed for command '{command_prefix or subject_lower}' for '{sender_email}': {e}")
 
-    return {
-        'statusCode': 200,
-        'body': json.dumps('Email processing complete.')
-    }
+    return {'statusCode': 200, 'body': json.dumps('Email processing complete.')}

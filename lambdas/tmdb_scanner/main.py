@@ -75,7 +75,7 @@ def lambda_handler(event, context):
                     user_email,
                     f"New Episode of {show_name} - S{season_number}E{episode_number} {episode_name}",
                     new_ep_html(show_name, season_number, episode_number, episode_name, image_url, tmdb_url),
-                    new_ep_text(show_name, season_number, episode_number, episode_name) 
+                    new_ep_text(show_name, season_number, episode_number, episode_name, tmdb_url) 
                 )
 
         except requests.exceptions.RequestException as e:
