@@ -260,7 +260,7 @@ You should now receive an alert at UTC+8
 ## ✨ Planned Enhancements
 
 - Unsubscribe all
-- List and unsubscribe
+- List subscribed items
 - Confirmation Emails
 - Email Domain
 - Email Design
