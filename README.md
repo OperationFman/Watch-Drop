@@ -268,8 +268,9 @@ You should now receive an alert at UTC+8
 
 ## ✨ Planned Enhancements
 
-- List subscribed items
-- Weekly Roundup Digest
-- Enhanced Rate Limiting / Security:
+- Movies
+- List all subscribed items
+- Weekly Roundup
+- Enhanced Rate Limiting / Security
 - Setup MAIL FROM, bounce, etc
 - S3 for Email Content Storage
