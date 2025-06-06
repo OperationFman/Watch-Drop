@@ -199,6 +199,13 @@ table values to match what you just created
 Note: Make sure the start of the `key` value matches what you put in
 terraform.tfvars `project_title_lowercase`
 
+### Update Email Content
+
+Update the wording inside `/lambdas/email_processor/responses.py` and
+`/lambdas/tmdb_scanner/aired_alert.py`
+
+Here you can customize the design of any emails sent to your users inbox
+
 ### Running IaC
 
 Note: Before running the IaC, ensure your new Route 53 domain is active. Open
@@ -261,12 +268,8 @@ You should now receive an alert at UTC+8
 
 ## ✨ Planned Enhancements
 
-- Unsubscribe all
 - List subscribed items
-- Confirmation Emails
-- Email Domain
-- Email Design
 - Weekly Roundup Digest
 - Enhanced Rate Limiting / Security:
-- Setup MAIL FROM
+- Setup MAIL FROM, bounce, etc
 - S3 for Email Content Storage
