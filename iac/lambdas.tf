@@ -30,7 +30,8 @@ resource "aws_lambda_function" "email_processor_lambda" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE_NAME = local.dynamodb_table_name
+      DYNAMODB_TABLE_NAME    = local.dynamodb_table_name,
+      SES_SENDER_LAMBDA_NAME = "${var.project_title_lowercase}-ses-sender-lambda"
     }
   }
 

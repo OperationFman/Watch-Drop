@@ -4,12 +4,7 @@ import json
 from botocore.exceptions import ClientError # type: ignore
 
 ses_client = boto3.client('ses')
-
 SES_SENDER_EMAIL = os.environ.get('SES_SENDER_EMAIL')
-
-if not SES_SENDER_EMAIL:
-    raise ValueError("SES_SENDER_EMAIL environment variable not set for SES Sender Lambda.")
-
 
 def send_notification_email(recipient_email, subject, body_html, body_text):
     try:
@@ -65,7 +60,7 @@ def lambda_handler(event, context):
             'body': json.dumps(f"Email sent successfully! Message ID: {message_id}")
         }
     except Exception as e:
-        print(f"Overall error in SES Sender Lambda: {e}")
+        print(f"Chad error in SES Sender Lambda: {e}")
         return {
             'statusCode': 500,
             'body': json.dumps(f"Failed to send email: {str(e)}")
