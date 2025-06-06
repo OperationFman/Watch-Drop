@@ -1,8 +1,8 @@
 import os
-import boto3  # type: ignore
+import boto3
 import json
-from botocore.exceptions import ClientError  # type: ignore
-import requests  # type: ignore
+from botocore.exceptions import ClientError
+import requests
 from datetime import datetime, timedelta
 from aired_alert import new_ep_html, new_ep_text
 
@@ -41,6 +41,7 @@ def lambda_handler(event, context):
                 break
             last_evaluated_key = response['LastEvaluatedKey']
         except ClientError as e:
+            print(f"DynamoDB scan failed: {e}")
             return {'statusCode': 500, 'body': json.dumps(f"Error scanning DynamoDB: {e.response['Error']['Message']}")}
 
     for item in subscriptions:
@@ -62,15 +63,18 @@ def lambda_handler(event, context):
 
             if tmdb_data.get('last_episode_to_air') and datetime.strptime(tmdb_data['last_episode_to_air']['air_date'], '%Y-%m-%d').date() == yesterday_utc:
                 episode_info = tmdb_data['last_episode_to_air']
-                content_title = f"{tmdb_data.get('name', 'Unknown TV Show')}"
+                show_name = tmdb_data.get('name', 'Unknown TV Show')
                 season_number = episode_info.get('season_number', 'N/A')
                 episode_number = episode_info.get('episode_number', 'N/A')
+                episode_name = episode_info.get('name', 'N/A')
+                poster_path = tmdb_data.get('poster_path')
+                image_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else ""
 
                 invoke_ses_sender_lambda(
-                    user_email, 
-                    f"Watch Drop: New Content Aired!: {content_title} - Season {season_number} Episode {episode_number}",
-                    new_ep_html(content_title, season_number, episode_number),
-                    new_ep_text(content_title, season_number, episode_number)
+                    user_email,
+                    f"New Episode of {show_name} - S{season_number}E{episode_number} {episode_name}",
+                    new_ep_html(show_name, season_number, episode_number, episode_name, image_url),
+                    new_ep_text(show_name, season_number, episode_number, episode_name) 
                 )
 
         except requests.exceptions.RequestException as e:

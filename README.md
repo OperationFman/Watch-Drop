@@ -259,22 +259,12 @@ You should now receive an alert at UTC+8
 
 ## ✨ Planned Enhancements
 
-- **User-Friendly Unsubscribe Button:** Add a pre-configured "remove"
-  link/button directly within notification emails that automatically populates a
-  new email for Lambda #1.
-- **Confirmation Emails:** Send confirmation emails (via Lambda #3) after
-  successful subscription additions or removals from Lambda #1.
-- **Email Domain**
-  - Custom email like foo@watchdrop.com instead of a gmail one
-- **Email Design:**
-  - Integrate the "Watch Drop" logo into notification emails.
-  - Include relevant show banner/cover art.
-  - Develop fancy HTML email styling for a better user experience.
-- **Weekly Roundup Digest:** Option for users to receive a weekly summary email
-  of all new drops, instead of individual notifications.
-- **Enhanced Rate Limiting / Security:** Implement more sophisticated rate
-  limiting strategies and security measures beyond basic IAM.
-- **Setup MAIL FROM**
-- **S3 for Email Content Storage:** Transition from relying solely on email
-  subject lines to storing full email content in S3 for more robust parsing of
-  commands from the email body and handling attachments.
+- Unsubscribe all
+- List and unsubscribe
+- Confirmation Emails
+- Email Domain
+- Email Design
+- Weekly Roundup Digest
+- Enhanced Rate Limiting / Security:
+- Setup MAIL FROM
+- S3 for Email Content Storage
