@@ -1,5 +1,5 @@
 def get_add_success_content(tmdb_id):
-    subject = f"Watch Drop: Subscription Added for {tmdb_id}"
+    subject = f"Watch Drop: Subscription Added"
     body_text = f"You are now subscribed to episode updates for ID: {tmdb_id}."
     body_html = f"<html><body><p>You are now subscribed TV show ID: <b>{tmdb_id}</b>.</p></body></html>"
     return subject, body_html, body_text
@@ -29,7 +29,7 @@ def get_unsupported_content_type_content(content_type):
     return subject, body_html, body_text
 
 def get_remove_success_content(tmdb_id):
-    subject = f"Watch Drop: Subscription Removed for {tmdb_id}"
+    subject = f"Watch Drop: Subscription Removed"
     body_text = f"You are no longer subscribed to updates for TMDB TV show ID: {tmdb_id}."
     body_html = f"<html><body><p>You are no longer subscribed to updates for TMDB TV show ID: <b>{tmdb_id}</b>.</p></body></html>"
     return subject, body_html, body_text
