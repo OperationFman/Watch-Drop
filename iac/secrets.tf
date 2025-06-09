@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "tmdb_api_key_secret" {
-  name        = "${var.project_title_lowercase}/tmdb_api_key" # A structured name for your secret
+  name        = "${var.project_title_lowercase}/tmdb_api_key"
   description = "TMDB API Key for the ${var.project_title} project"
 
   tags = {
