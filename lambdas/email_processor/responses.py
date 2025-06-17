@@ -69,7 +69,7 @@ def get_help_instructions_content():
         <p style="margin-bottom: 0;">Interested in using this email-driven TV show notification service?</p>
         <p style="margin-top: 0; margin-bottom: 20px;">Here's how</p>
 
-        <img src="https://raw.githubusercontent.com/OperationFman/Watch-Drop/refs/heads/main/misc/WatchDropInstruction.png" alt="Watch Drop Instructions" style="max-width:30%;height:auto;display:block;margin-left: 25px">
+        <img src="https://raw.githubusercontent.com/OperationFman/Watch-Drop/refs/heads/main/misc/WatchDropInstruction.png" alt="Watch Drop Instructions" style="max-width:60%;height:auto;display:block;margin: 0 25px">
 
         <div style="margin-bottom: 15px;">
             <h3 style="margin-bottom: 5px;">1. Find Your TV Show</h3>
@@ -101,7 +101,7 @@ def get_help_instructions_content():
 
         <p>That's it! Now just wait for a new episode to air</p>
         <p>Your notifications will look like this:</p>
-        
+
         <img src="https://raw.githubusercontent.com/OperationFman/portfolio/refs/heads/main/public/projects/watch-drop/desktop1.png" alt="Watch Drop Example" style="max-width:100%;height:auto;display:block;margin:0 auto 20px auto;">
 
     </body>
