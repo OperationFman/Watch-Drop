@@ -22,7 +22,7 @@ comprehensive content information.
 
 ## 🧠 How It Works
 
-![Watch Drop Demo](https://d3atatnx15erez.cloudfront.net/WatchDropDemo.gif)
+![Watch Drop Instructions](https://raw.githubusercontent.com/OperationFman/Watch-Drop/refs/heads/main/misc/WatchDropInstruction.png)
 
 1. Research what show you want to get alerts for in
    [TMDB](https://developer.themoviedb.org/reference/tv-series-episode-groups)
