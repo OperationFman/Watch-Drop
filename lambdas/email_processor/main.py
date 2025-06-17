@@ -6,7 +6,8 @@ from botocore.exceptions import ClientError #type: ignore
 from responses import (
     get_nuke_confirmation_content, get_command_not_understood_content,
     get_invalid_tmdb_url_content, get_unsupported_content_type_content,
-    get_add_success_content, get_remove_success_content, get_operation_failed_content
+    get_add_success_content, get_remove_success_content, get_operation_failed_content,
+    get_help_instructions_content
 ) 
 
 dynamodb_client = boto3.client('dynamodb')
@@ -24,7 +25,6 @@ def invoke_ses_sender_lambda(recipient_email, subject, body_html, body_text):
     ses_sender_lambda_name = os.environ.get('SES_SENDER_LAMBDA_NAME')
     payload = json.dumps({"recipient_email": recipient_email, "subject": subject, "body_html": body_html, "body_text": body_text})
     lambda_client.invoke(FunctionName=ses_sender_lambda_name, InvocationType='Event', Payload=payload)
-
 
 def lambda_handler(event, context):
     table_name = os.environ.get('DYNAMODB_TABLE_NAME')
@@ -44,6 +44,11 @@ def lambda_handler(event, context):
                 for item in response.get('Items', []):
                     dynamodb_client.delete_item(TableName=table_name, Key={'user_email': {'S': sender_email.lower()}, 'tmdb_id': {'S': item['tmdb_id']['S']}})
                 subject, body_html, body_text = get_nuke_confirmation_content(items_nuked)
+                invoke_ses_sender_lambda(sender_email, subject, body_html, body_text)
+                continue
+            
+            if subject_lower == "help":
+                subject, body_html, body_text = get_help_instructions_content()
                 invoke_ses_sender_lambda(sender_email, subject, body_html, body_text)
                 continue
 

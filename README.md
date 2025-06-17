@@ -22,6 +22,8 @@ comprehensive content information.
 
 ## 🧠 How It Works
 
+![Watch Drop Demo](https://d3atatnx15erez.cloudfront.net/WatchDropDemo.gif)
+
 1. Research what show you want to get alerts for in
    [TMDB](https://developer.themoviedb.org/reference/tv-series-episode-groups)
 
