@@ -3,6 +3,8 @@
 Simple Email service to subscribe and keep track of shows when a new episode is
 available to stream.
 
+#### [Try It Now ](mailto:subscribe@watchdrop.org?subject=help)
+
 ---
 
 ## 🚀 Overview

@@ -69,7 +69,7 @@ def get_help_instructions_content():
         <p style="margin-bottom: 0;">Interested in using this email-driven TV show notification service?</p>
         <p style="margin-top: 0; margin-bottom: 20px;">Here's how</p>
 
-        <img src="https://raw.githubusercontent.com/OperationFman/Watch-Drop/refs/heads/main/misc/WatchDropInstruction.png" alt="Watch Drop Instructions" style="max-width:60%;height:auto;display:block;margin: 0 25px">
+        <img src="https://raw.githubusercontent.com/OperationFman/Watch-Drop/refs/heads/main/misc/WatchDropInstruction.png" alt="Watch Drop Instructions" style="max-width:60%;height:auto;display:block;margin: 0 20px">
 
         <div style="margin-bottom: 15px;">
             <h3 style="margin-bottom: 5px;">1. Find Your TV Show</h3>
@@ -81,19 +81,21 @@ def get_help_instructions_content():
         </div>
 
         <div style="margin-bottom: 50px;">
-            <h3 style="margin-bottom: 5px;">3. Subscribe</h3>
-            <p style="margin-top: 0; margin-bottom: 3px;">Write the following command in the email subject line:</p>
-            <b><code>add https://www.themoviedb.org/tv/123-show-name</code></b>
-            <p style="margin-top: 3px;">Hit Send</p>
+            <h3 style="margin-bottom: 5px;">3. Send an Email</h3>
+            <p style="margin-top: 0; margin-bottom: 0;">Recipient:</p>
+            <b style="margin-left: 2px;"><code>subscribe@watchdrop.org</code></b>
+            <p style="margin-bottom: 0; margin-top: 3px;">Subject:</p>
+            <b style="margin-left: 2px;"><code>add https://www.themoviedb.org/tv/123-show-name</code></b>
+            <p style="margin-top: 3px;">Send</p>
         </div>
 
         <div style="margin-bottom: 50px;">
             <h3 style="margin-bottom: 0;">Other Commands</h3>
             <p style="margin-top: 0; margin-bottom: 0;">Unsubscribe from a show:</p>
-            <b><code>remove https://www.themoviedb.org/tv/123-show-name</code></b>
+            <b style="margin-left: 2px;"><code>remove https://www.themoviedb.org/tv/123-show-name</code></b>
 
             <p style="margin-top: 15px; margin-bottom: 0;">Unsubscribe from everything (Delete account):</p>
-            <b><code>nuke account</code></b> 
+            <b style="margin-left: 2px;"><code>nuke account</code></b> 
 
             <p style="margin-top: 15px; margin-bottom: 0;">Get Help:</p>
             <b><code>help</code></b> 
@@ -102,7 +104,7 @@ def get_help_instructions_content():
         <p>That's it! Now just wait for a new episode to air</p>
         <p>Your notifications will look like this:</p>
 
-        <img src="https://raw.githubusercontent.com/OperationFman/portfolio/refs/heads/main/public/projects/watch-drop/desktop1.png" alt="Watch Drop Example" style="max-width:100%;height:auto;display:block;margin:0 auto 20px auto;">
+        <img src="https://raw.githubusercontent.com/OperationFman/Watch-Drop/refs/heads/main/misc/WatchDropExample.png" alt="Watch Drop Example" style="max-width:100%;height:auto;display:block;margin:0 auto 20px auto;">
 
     </body>
     </html>
