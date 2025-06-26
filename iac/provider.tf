@@ -7,11 +7,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "watch-drop-terraform-state-355734424613"
-    key            = "watch-drop/terraform.tfstate"
-    region         = "ap-southeast-2"
-    dynamodb_table = "watch-drop-terraform-locks"
-    encrypt        = true
+    bucket  = "watch-drop-terraform-state-355734424613"
+    key     = "watch-drop/terraform.tfstate"
+    region  = "ap-southeast-2"
+    encrypt = true
   }
 }
 
